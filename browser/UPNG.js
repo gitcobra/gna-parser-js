@@ -143,7 +143,7 @@ UPNG.decode = function(buff)
 			out.tabs[type] = [];
 			for(var i=0; i<8; i++) out.tabs[type].push(bin.readUint(data, offset+i*4));
 		}
-		else if(type=="tEXt" || type=="zTXt") {
+		else if(type==="tEXt" || type=="zTXt") {
 			if(out.tabs[type]==null) out.tabs[type] = {};
 			var nz = bin.nextZero(data, offset);
 			var keyw = bin.readASCII(data, offset, nz-offset);
@@ -473,6 +473,9 @@ UPNG.encode._main = function(nimg, w, h, dels, tabs) {
 	}
 	leng += 12;
 
+	// for comment
+	leng += 4 + 14;
+
 	var data = new Uint8Array(leng);
 	var wr=[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 	for(var i=0; i<8; i++) data[i]=wr[i];
@@ -559,6 +562,13 @@ UPNG.encode._main = function(nimg, w, h, dels, tabs) {
 		data.set(imgd,offset);
 		offset += dl;
 		wUi(data,offset,crc(data,ioff,offset-ioff));  offset+=4; // crc
+	}
+
+	{// add comment
+		wUi(data,offset, 6);      offset+=4;
+		wAs(data,offset,"tEXt");  offset+=4;
+		wAs(data,offset, '_GNAP\0_');     offset+=6;
+		wUi(data,offset,crc(data,offset-8,8));  offset+=4; // crc
 	}
 
 	wUi(data,offset, 0);     offset+=4;

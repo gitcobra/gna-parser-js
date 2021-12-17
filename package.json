@@ -17,7 +17,7 @@
     "watch:app": "tsc -w -p tsconfig.app.json",
     "watch:node": "tsc -w -p tsconfig.node.json",
     "server": "http-server -p 3000",
-    "start": "concurrently \"npm run watch:esm\" \"npm run watch:cjs\" \"npm run watch:node\" \"npm run watch:app\" \"http-server -p 3000\""
+    "start": "concurrently \"npm run watch:esm\" \"npm run watch:cjs\" \"npm run watch:node\" \"npm run watch:app\" \"http-server -c-1 -p 3000\""
 
   },
   "license": "ISC",

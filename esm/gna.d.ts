@@ -58,7 +58,7 @@ export declare function parsePalette(dv: DataView | Uint8Array, offset?: number)
  */
 export declare function parseBETA(pdat: ArrayBuffer, offset?: number): GNAImageData;
 /**
- * parsePlain: parse uncompressed pixel data with different structure from BETA
+ * parsePlain:
  * 非圧縮データ (KIBA[0-9].Pのみ?) betaとはカラービットごとのパースの仕方が異なる
  * ヘッダはなくファイル先頭から特定位置まで16色ピクセルデータに変換する
  * 1: 1バイトを8ドットのビットパターンとする
