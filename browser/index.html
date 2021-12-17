@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GNA to PNG Converter</title>
+    <script src="vue.global.prod.js"></script>
+    <script src="pako.js"></script>
+    <script src="UPNG.js"></script>
+    <script type="module" src="./app.js"></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+        * {
+            z-index: 1;
+            vertical-align:middle;
+            box-sizing: border-box;
+        }
+        html {
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAAA3NCSVQICAjb4U/gAAAABlBMVEWZmZn///+D7jMZAAAAD0lEQVQImWPgZ4DADxAIABHgA/2duthcAAAAAElFTkSuQmCC);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        body {
+            width: 640px;
+            margin: auto;
+        }
+        p, h1,h2,h3,h4,h5,h6,ul,ol {
+            margin: 0.2em 0em 0.2em;
+            line-height: 120%;
+        }
+        button {
+            white-space: nowrap;
+        }
+        #control button {
+            height: 2em;
+            user-select: none;
+        }
+        #edmsgbox {
+            z-index:10;
+            position:absolute;
+            width:304px; height:400px;
+            left:0px; top:0px;
+            padding: 16px;
+            margin: 0px;
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAAA3NCSVQICAjb4U/gAAAABlBMVEX///8BAQE6HLieAAAAAnRSTlMA/1uRIrUAAAAMSURBVAiZY2hgcAAAAcQAwc17GKAAAAAASUVORK5CYII=);
+
+            font-size:16px; font-family: ＭＳ ゴシック, 平成角ゴシック, monospace;
+            font-weight: 600;
+            line-height: 20px;
+            text-shadow:
+                1px 1px 0px #000, -1px -1px 0px #000,
+                -1px 1px 0px #000,  1px -1px 0px #000,
+                1px 0px 0px #000, -1px  0px 0px #000,
+                0px 1px 0px #000,  0px -1px 0px #000;
+            color: white;
+            white-space: pre-wrap;
+        }
+        img {
+            vertical-align: bottom;
+            user-select: none;
+        }
+
+        #header {
+            z-index: 1;
+        }
+        #board, #title, .bg {
+            position: absolute;
+            width: 640px;
+            height: 100%;
+            left: 0px;
+            top: 0px;
+            z-index: -2;
+            opacity: 0.2;
+            background-repeat: repeat-y;
+        }
+        #bgbust {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            left:auto;
+            top:auto;
+            right: 45px;
+            bottom: 50px;
+            z-index: -1;
+            background-repeat: no-repeat;
+            filter: contrast(0.7) sepia(1) hue-rotate(190deg);
+        }
+        .bgbust-enter-active, .bgbust-leave-active {
+            transition: opacity 5s ease;
+        }
+        .bgbust-enter-from, .bgbust-leave-to {
+            opacity: 0;
+        }
+
+        .animeparent {
+            position:relative;
+            display:inline-block;
+        }
+        .animechild {
+            position:absolute;
+            left:0px; top:0px;
+        }
+        .v-enter-from {
+            opacity: 0;
+        }
+        .v-enter-active, .v-leave-active {
+            transition: opacity 0.5s ease;
+        }
+        .v-leave-to {
+            opacity: 0;
+        }
+        .v-move {
+            transition: all 0.5s ease-out;
+        }
+
+        .img-enter-from, .img-leave-to {
+            opacity: 0;
+            filter: blur(5px);
+        }
+        .img-enter-active {
+            transition: all 0.5s ease;
+        }
+        .img-leave-active {
+            transition: all 0.5s ease;
+        }
+
+        .desk-enter-from {
+            opacity: 0;
+            transform:translateY(-150px);
+        }
+        .desk-enter-active {
+            transition: all 0.5s ease-out;
+            animation: bounce-in .5s ease-out;
+        }
+        .desk-leave-active {
+            transition: all 0.5s ease-out;
+        }
+        .desk-leave-to {
+            opacity: 0;
+            /*transform:translateY(-150px);*/
+        }
+        @keyframes bounce-in {
+            0%   {transform:translateY(-100vh);}
+            50%  {transform:translateY(30px);}
+            60%  {transform:translateY(-20px);}
+            80%  {transform:translateY(10px);}
+            90%  {transform:translateY(-5px);}
+            100% {transform:translateY(0px);}
+        }
+
+        .bunny-enter-from {
+            opacity: 0;
+            transform:translateY(-100px);
+        }
+        .bunny-enter-active {
+            transition: all 0.2s ease-in;
+        }
+        .bunny-leave-from {
+            transform:translateY(10px);
+        }
+        .bunny-leave-to {
+            transform:translateY(-110px);
+        }
+        .bunny-leave-active {
+            transition: all 0.2s ease-out;
+        }
+
+        .imgslide-enter-from, .imgslide-leave-to {
+            opacity: 0;
+            transform:translateX(60px);
+        }
+        .imgslide-enter-active, .imgslide-leave-active {
+            transition: all 0.5s ease;
+        }
+
+        .balloonbase {
+            border-radius: 100% 100% 10% 10% / 100% 100% 100% 100%;
+        }
+        .balloon-enter-from {
+            transform-origin: center 100%;
+            transform: scale(0.3, 0);
+            border-radius: 0%;
+        }
+        .balloon-enter-active {
+            animation: swell 0.3s ease;
+        }
+        .balloon-enter-to {
+            transform-origin: center 100%;
+            transform: scale(1);
+        }
+        .balloon-leave-from {
+            transform-origin: center 100%;
+            transform: scale(1);
+        }
+        .balloon-leave-active {
+            transition: all 0.15s ease-out;
+        }
+        .balloon-leave-to {
+            /*opacity: 0;*/
+            transition-delay: 0.5s;
+            transform: scale(0.3, 0);
+            transform-origin: center 100%;
+            /*transform: translateY(0px);*/
+        }
+        @keyframes swell {
+            0%   {transform: scale(0,0);}
+            30%  {transform: scale(1.3,1.3);}
+            40%  {transform: scale(0.8,0.8);}
+            50%  {transform: scale(1.2,1.2);}
+            60%  {transform: scale(0.9,0.9);}
+            70%  {transform: scale(1.1,1.1);}
+            80%  {transform: scale(0.95,0.95);}
+            90%  {transform: scale(1.05,1.05);}
+            100% {transform: scale(1,1);}
+        }
+
+        .stopanime {
+            animation-play-state: paused;
+        }
+
+        .ballooncontent-enter-from {
+            opacity: 0;
+            transform-origin: center 100%;
+            transform: scale(0);
+        }
+        .ballooncontent-enter-active {
+            transition: all 0.1s ease;
+        }
+        .ballooncontent-enter-to {
+            opacity: 1;
+            transform-origin: center 100%;
+            transform: scale(1);
+        }
+        .ballooncontent-leave-active {
+            transition: all 0.1s ease;
+        }
+        .ballooncontent-leave-to {
+            transform-origin: center 100%;
+            transform: scale(0);
+            opacity: 0;
+            transition-delay: 0.5s;
+        }
+
+        @keyframes speaking {
+            0%   {transform: scale(1.0, 1.0);}
+            10%  {transform: scale(1.01 ,1.01);}
+            20%  {transform: scale(1.09 ,1.09);}
+            30%  {transform: scale(1 ,1);}
+            40%  {transform: scale(1.01 ,1.0);}
+            50%  {transform: scale(1.09 ,1.09);}
+            60%  {transform: scale(1 ,1);}
+            70%  {transform: scale(1.01 ,1.01);}
+            80%  {transform: scale(1 ,1);}
+            90%  {transform: scale(1.09 ,1.08);}
+            100% {transform: scale(1.01, 1.09);}
+        }
+        .balloonspeaking {
+            transform-origin: center 100%;
+            animation: speaking 0.5s linear 0s infinite;
+        }
+
+        .speaker {
+            animation: vibration 0.1s  infinite;
+        }
+        @keyframes vibration {
+            0% {transform: translate(0px, 0px) rotateZ(0deg)}
+            25% {transform: translate(1px, 1px) rotateZ(1deg)}
+            50% {transform: translate(0px, 1px) rotateZ(0deg)}
+            75% {transform: translate(1px, 0px) rotateZ(-1deg)}
+            100% {transform: translate(0px, 1px) rotateZ(0deg)}
+        }
+
+        .panelslideshow-enter-from, .panelslideshow-leave-to {
+            opacity: 0;
+            filter: blur(10px);
+            filter: brightness(100);
+        }
+        .panelslideshow-enter-active, .panelslideshow-leave-active {
+            transition: all 3s ease;
+        }
+
+        .kiba-enter-from {
+            transform: translateX(-150px);
+            opacity: 0;
+        }
+        .kiba-enter-active {
+            transition: all 0.7s linear;
+        }
+        .kiba-leave-active {
+            transition: all 0.7s ease;
+        }
+        .kiba-leave-to {
+            opacity: 0;
+        }
+
+        .alice-enter-from, .alice-leave-to {
+            transform: translateX(-300px) scale(0);
+            opacity: 0;
+        }
+        .alice-enter-active, .alice-leave-active {
+            transition: all 0.8s ease;
+        }
+        .alice-enter-active:nth-child(1), .alice-leave-active:nth-child(1) {
+            transition: all 0.8s ease 0s;
+        }
+        .alice-enter-active:nth-child(2), .alice-leave-active:nth-child(2) {
+            transition: all 0.8s ease 0.1s;
+        }
+        .alice-enter-active:nth-child(3), .alice-leave-active:nth-child(3) {
+            transition: all 0.8s ease 0.2s;
+        }
+        .alice-enter-active:nth-child(4), .alice-leave-active:nth-child(4) {
+            transition: all 0.8s ease 0.3s;
+        }
+        .alice-enter-active:nth-child(5), .alice-leave-active:nth-child(5) {
+            transition: all 0.8s ease 0.4s;
+        }
+        .alice-move {
+            transition: all 2s ease;
+        }
+
+        .voiceslider-enter-from {
+            transform: scaleX(0);
+        }
+        .voiceslider-enter-to {
+            transform: scaleX(1);
+        }
+
+        .obake-enter-from {
+            transform:translateY(-250px);
+        }
+        .obake-enter-active {
+            transform:translateY(-250px);
+            animation: bounce-obake 1.5s ease-out 0.7s;
+        }
+        .obake-leave-active {
+            transition: all 0.3s ease-out;
+        }
+        .obake-leave-to {
+            opacity: 0;
+            transform:translateY(-250px);
+        }
+        @keyframes bounce-obake {
+            0%   {transform:translateY(-250px);}
+            10%  {transform:translateY(120px);}
+            20%  {transform:translateY(-100px);}
+            30%  {transform:translateY(100px);}
+            40%  {transform:translateY(-75px);}
+            50%  {transform:translateY(50px);}
+            60%  {transform:translateY(-25px);}
+            70%  {transform:translateY(10px);}
+            80%  {transform:translateY(-5px);}
+            90%  {transform:translateY(2px);}
+            100% {transform:translateY(0px);}
+        }
+
+        .nameplate-enter-from {
+            transform: translateY(-50px);
+        }
+        .nameplate-enter-active {
+            transition: all 1s ease;
+        }
+        .nameplate-leave-active {
+            transition: all 1s ease 0.5s;
+        }
+        .nameplate-leave-to {
+            transform: translateY(32px);
+            opacity: 0;
+        }
+
+        .deskleave-enter-from, .deskleave-leave-to {
+            opacity: 0;
+        }
+        .deskleave-enter-active {
+            transition: all 0.3s ease;
+        }
+        .deskleave-enter-to {
+            opacity: 1;
+        }
+        .deskleave-leave-active {
+            transition: all 1s ease 2s;
+        }
+
+    </style>
+
+</head>
+
+<body draggable="false" v-cloak>
+
+<div id="header" style="background-color:field; padding:0.5em; width:640px; position:relative; padding-left: 55px;">
+    <transition appear>
+        <div class="bg" v-if="Temp.renderedBinsen" :style="{backgroundImage: 'url(' + Temp.renderedBinsen + ')'}"></div>
+        <template v-else-if="imageMap.has('BINSEN.GNA')">
+            {{(Temp.renderedBinsen = getDataUrl('BINSEN.GNA'), '')}}
+        </template>
+    </transition>
+    <transition appear name="bgbust">
+        <div class="bg" id="bgbust" :key="Temp.bustshotsrc" v-if="Temp.bustshotsrc" :style="{backgroundImage: 'url(' + Temp.bustshotsrc + ')'}"></div>
+    </transition>
+
+    <div style="display:flex; align-items:center;">
+        <h1 style="white-space:nowrap; position:relative; margin-left:-20px;" ref="topface-observe-intersect" @intersect="Tmpr.topfintersect=1;Tmpr.obakeshow=1;" @unintersect="Tmpr.topfintersect=0;Temp.topface=undefined;Tmpr.obakeshow=0;Temp.obakesrc=''">
+            GNA to PNG Converter
+        </h1>
+
+        <div style="position:relative; width:64px; height:32px; margin-left:8px;">
+            <template v-if="Temp.showtopface=Tmpr.topfintersect && SPR.CHARA">
+                {{ (Temp.topfaceshow = 1, '') }}
+                {{ (Temp.topface = Temp.topface >= 0 ? Temp.topface : (Math.random()*2|0)*5+Math.random()*5|0, '') }}
+            </template>
+            <template v-else>
+                {{ (Temp.topfaceshow = 0, '') }}
+            </template>
+                <transition name="img" @before-enter="Temp.facechanging=1" @after-enter="Temp.facechanging=0">
+                    <img style="left:0px; top:0px; position:absolute; cursor:grab;" v-if="Temp.topfaceshow" :key="Temp.topface" :src="SPR.CHARA[Temp.topface]" @click="!Temp.facechanging && (Temp.topface=((Math.random()*2|0)*5 + ++Temp.topface % 5))">
+                </transition>
+                <transition name="nameplate">
+                    <img style="left:32px; top:0px; position:absolute;" v-if="Temp.topfaceshow" :key="Temp.topface" :src="SPR.CHARA[Temp.topface % 5 + 10]">
+                </transition>
+            </template>
+        </div>
+
+        <div style="font-size:xx-small; flex-grow: 1; text-align: right; height:64px;">
+            <a href="https://github.com" style="vertical-align: bottom;">
+                GitHub
+                <span style="vertical-align: bottom;width:64px; height:64px; position:relative;" class="animeparent" v-if="Tmpr.topfintersect && SPR.KISSA">
+                    <transition name="imgslide" appear>
+                    <img :key="Temp.topface" :src="SPR.KISSA[5+Temp.topface%5 || 5]" style="position:absolute; vertical-align:bottom; width:64px;height:64px; left:0px; top:0px;">
+                    </transition>
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <div style="width:1px; height:1px; position:absolute; z-index:22;">
+        <transition>
+            <span v-if="SPR.OBAKE1" style="cursor:grab; position:absolute; width:100px; left:-107px; top:70px; user-select: none; text-align:center; display:inline-block;">
+                {{ (Temp.obakesrc=Temp.obakesrc || SPR.OBAKE1[Math.random()*9|0], '') }}
+                <transition name="obake" mode="out-in" appear>
+                <img v-if="Tmpr.obakeshow" @click="Temp.obakesrc=SPR.OBAKE1[Math.random()*9|0]" :src="Temp.obakesrc" :key="Temp.obakesrc">
+                </transition>
+            </span>
+        </transition>
+    </div>
+
+
+    <p style="clear:right">
+        GNA image format is used on the old Japanese PC game <strong>"卒業(Sotsugyō)II 〜Neo Generation〜"</strong> (for NEC PC-98) released
+        by JHV(Japan Home Video) in 1994.</p>
+    <p>
+        This tool converts the GNA files to PNG format images, also some voice data to WAVE format.
+    </p>
+
+    <hr style="clear:right">
+
+    <div>
+        <h4>Usage: <img v-if="SPR.CHARA" :src="SPR.CHARA[68]"></h4>
+        <ol :style="SPR.CHARA?{listStyle:'none'}:{}">
+            <li :style="SPR.CHARA?{paddingLeft:'34px', marginLeft:'-32px', background:'url('+SPR.CHARA[55]+') left 0px top 0px/32px 32px no-repeat'}:{}">push the <strong>"Load files"</strong> button and open (or drag & drop) the game files with .GNA, .P, .EXE, .ADP extensions.
+            <li :style="SPR.CHARA?{paddingLeft:'34px', marginLeft:'-32px', background:'url('+SPR.CHARA[56]+') left 0px top 0px/32px 32px no-repeat'}:{}">then push the <strong>"Save as ZIP"</strong> button to save the images as a zip file, a download dialog will pop up.</li>
+        </ol>
+    </div>
+
+
+
+
+    <h5>Note: <img v-if="SPR.CHARA" :src="SPR.CHARA.hiyoko"></h5>
+    <span v-if="SPR.CHARA && Tmpr.deskintersect" @mouseenter="Temp.deskleave=0;" @mouseleave="Temp.desk='blank'; Temp.deskleave=1;" style="float:right; cursor:grab; position:relative; width:80px; height:128px; z-index:999;">
+        <transition name="desk" appear>
+            <img key="desk" :src="SPR.CHARA[17]" style="position:absolute;left:0px;top:0px;"
+                @mouseenter="SPR.SD && (!Temp.desk && (Temp.desk=SPR.SD[Math.random()*65|0])) || alert('needs SD.P')">
+        </transition>
+        <transition :name="Temp.deskleave ? 'deskleave' : 'v'">
+            <img v-if="Temp.desk==='blank'" key="desk2" :src="SPR.CHARA[17]" style="z-index:5; position:absolute;left:0px;top:0px;"
+                @mouseenter="SPR.SD ? Temp.desk=SPR.SD[Math.random()*65|0] : null">
+
+            <img v-else-if="Temp.desk" :key="Temp.desk" :src="Temp.desk" style="z-index:6; position:absolute;left:0px;top:0px;"
+                @click="Temp.desk=SPR.SD[Math.random()*65|0]">
+        </transition>
+    </span>
+
+    <div style="position: relative;"  ref="desk-observe-intersect" @intersect="Tmpr.deskintersect=Tmpr.kibaintersect=1; SPR.KIBA && (Temp.kibasrc='', Temp.kibachr=Math.random()*SPR.KIBA.length|0);" @unintersect="Tmpr.deskintersect=Tmpr.kibaintersect=0; Temp.desk=''; Temp.kibasrc=''">
+        <ul style="font-size:small;" :style="SPR.CHARA?{listStyle: 'url('+SPR.CHARA[66]+')'}:{}">
+            <li>
+            you can select <strong>multiple files</strong> in the file open dialog.
+            <li>
+            the parser automatically picks appropriate data, so you can just select and open all of the files in the game disks at a time. no need to think to choose files with the correct extensions.
+            <li>
+            if you select a disk image file (such as .fdi, .hdi) the parser may read some main visual images but will <strong>miss</strong> some data that don't
+            have individual headers.
+            <li>
+            the total number of the images I checked is <strong>565</strong>.
+            <li>
+            <strong>Browser Requirements:</strong> please use <strong>latest</strong> version of Firefox or Chrome. 😇
+            <li>
+              external libraries: <a href="https://github.com/photopea/UPNG.js/">UPNG.js</a> <a href="https://github.com/nodeca/pako">pako</a> <a href="https://v3.ja.vuejs.org/">Vue.js</a>
+        </ul>
+
+        <template v-if="SPR.KIBA">
+            {{ (Temp.kibachr = Temp.kibachr >=0 ? Temp.kibachr : Math.random()*SPR.KIBA.length|0, '') }}
+            {{ (Temp.kibagrab = (Temp.viewPoped || Temp.viewTrans) ? SPR.KIBA[Temp.kibachr][2] : '', '') }}
+            {{ (Temp.kibasrc = Temp.kibasrc || SPR.KIBA[Temp.kibachr].walk, '') }}
+        </template>
+        <transition name="kiba">
+        <img ref="kibaimg" v-if="SPR.KIBA && Tmpr.kibaintersect" :src="Temp.kibagrab || Temp.kibasrc" style="position: absolute; left:-80px; bottom:0px; cursor:grab;"
+            @mouseenter="Temp.kibasrc=SPR.KIBA[Temp.kibachr][4]" @mouseleave="Temp.kibasrc=SPR.KIBA[Temp.kibachr].walk" @mousedown="Temp.kibasrc=SPR.KIBA[Temp.kibachr][3]" @mouseup="Temp.kibasrc=SPR.KIBA[Temp.kibachr][4]"
+            @click.right="Temp.kibachr=Math.random()*SPR.KIBA.length|0" @click.middle="Temp.kibachr=Math.random()*SPR.KIBA.length|0">
+        </transition>
+
+    </div>
+
+
+
+
+    <hr style="clear:right">
+
+
+    <div style="display:flex; align-items: center; background-color: field; margin-left: -20px;">
+        <button style="margin-left:4px;" @click="$refs.fileinput.click()">📂Load files</button><input @input="getFile" type="file" ref="fileinput" multiple accept=".gna,.p,.exe,.adp,.dat" style="display:none;">
+        <button style="margin-left:4px;" :style="SPR.CHARA?{backgroundColor:'rgb(51,136,68)', color:'white'}:{}" @click="saveAllAsZip" :disabled="!soundMap.size && !imageMap.size"><img v-if="SPR.CHARA" :src="SPR.CHARA.floppy"><span v-else>💾</span>Save as ZIP</button>
+        <button style="margin-left:4px;" @click="reset" :style="SPR.CHARA?{backgroundColor:'rgb(51,136,68)', color:'white'}:{}" :disabled="!soundMap.size && !imageMap.size && !endMessages"><img v-if="SPR.CHARA" :src="SPR.CHARA.tea"><span v-else>🗑</span>Reset</button>
+        <log-smooth-scroll ref="profile" v-bind:log="log"
+            style="padding:2px; flex-grow:1; margin-left:10px; height:4em; font-size:xx-small;"></log-smooth-scroll>
+    </div>
+</div>
+
+
+<div style="background-color:white; padding: 0px 8px; margin-top:1em; position:relative;">
+    <transition name="panelslideshow">
+        <div class="bg" ref="bestbg" v-if="this.panelFileUrl" :key="this.panelFileUrl" style="filter: blur(1px);  transform: scale(-1, 1);" :style="{backgroundImage: 'url(' + this.panelFileUrl + ')', backgroundPositionY:'' }"></div>
+    </transition>
+
+    <div id="control" style="user-select: none; display:flex; justify-content:center;">
+
+        <div style="display:flex; flex-wrap: wrap; position:relative; padding-top:8px;"  @mouseenter="!Temp.viewPoped && (Temp.viewPoped = SPR.SAILOR && SPR.SAILOR[Math.random()*5|0])" @mouseleave="Temp.viewPoped=0" :title="SPR.SAILOR? '' : 'load SAILOR.P'">
+            <transition name="balloon" @before-enter="Temp.viewTrans=1" @after-leave="Temp.viewTrans=0">
+                <div key="balloon" v-if="Temp.viewPoped" style="border-radius: 100% 100% 70px 70px / 70% 70% 100% 100%; position:absolute; left:-35px; top:-100px; width:140px; height:100px; background-color:field;">
+                    <div v-if="Temp.viewPoped" style="position:absolute; left:35px; top:25px; font:12px impact; line-height:100%;">
+                        <img :src="Temp.viewPoped" style="position:absolute; left:-60px; top:-15px;">
+                        <div style="font-size: 13px;">Use Arrow Keys</div>
+                        <div>⇦:prev image</div>
+                        <div>⇧:prev file</div>
+                        <div>⇩:next file</div>
+                        <div>⇨:next image</div>
+                    </div>
+                </div>
+            </transition>
+
+            <div>
+                <div style="font:16px impact; position:relative;"  :style="Temp.viewPoped ? {fontSize:'16px', color:'blue', transition:'all 0.2s', filter:'drop-shadow(0px 0px 1px blue)'}:{transition:'all 2s', fontSize:'16px'}">Image Viewer</div>
+                <select ref="filelist" v-model="currentSelectedFile">
+                    <option v-if="!imageMap.size" key="blank" value="" disabled>Load GNA files</option>
+                    <option v-else value="" key="disabled" disabled>Choose a file</option>
+                    <option v-for="[key] in imageMap" :key="key" :value="key">{{key + (imageMap.get(key).length > 1 ? '('+imageMap.get(key).length+')' : '') }}</option>
+                </select>
+            </div>
+            <div style="white-space:nowrap">
+                <button ref="left" title="previous image" @click="move('left')" :disabled="entireImageIndex <= 0">⇦</button>
+                <button ref="up" title="previous file"@click="move('up')" :disabled="fileIndex <= 0 ">⇧</button>
+                <button ref="down" title="next file"@click="move('down')" :disabled="fileIndex >= imageMap.size - 1">⇩</button>
+                <button ref="right" title="next image"@click="move('right')" :disabled="entireImageIndex >= entireImageList.length - 1">⇨</button>
+            </div>
+        </div>
+
+
+
+        <div style="position:relative;  padding-top:8px;" :title="SPR.SDS? '' : 'load SDS.P'">
+            <template v-if="speaking && SPR.SDS">
+                {{(Temp.vballoon = 1, '')}}
+            </template>
+            <template v-else>
+                {{(Temp.vballoon = 0, Temp.signboard = 0, '')}}
+            </template>
+            <transition name="balloon" @before-enter="Temp.speaker = getSpeaker()">
+                <div v-if="Temp.vballoon" style="position:absolute; left:-40px; top:-159px;">
+                    <div :class="{balloonspeaking: vibrating}" style="border-radius: 100% 100% 30% 30% / 100% 100% 80% 80%; width:200px; height:160px; background-color:field;">    </div>
+                </div>
+            </transition>
+
+            <transition name="ballooncontent" @before-enter="Temp.signboard=1">
+            <div v-if="Temp.vballoon" style="position:absolute; top:-155px; left:-30px; width:160px; height:145px;">
+                <div :class="{speaker:vibrating}" style="position:absolute; left:40px; top:20px;">
+                    <transition>
+                    <img :key="Temp.speaker" :src="SPR.SDS[5+Temp.speaker]" style="position:absolute" :style="vibrating?{transition:'all 0.3s ease-out', filter:'drop-shadow(0px 0px 10px '+ChrColors[Temp.speaker]+') drop-shadow(0px 0px 15px '+ChrColors[Temp.speaker]+')'}:{transition:'all 1s ease-out', font:'16px impact'}">
+                    </transition>
+                    <span :style="{color:ChrColors[Temp.speaker], font:'normal 14px impact', position:'absolute', left:'6px', top: (Temp.speaker % 2 ? 10:54) +'px', whiteSpace:'nowrap', display:'inline-block'}">
+                        NOW SPEAKING
+                        <transition name="voiceslider" appear :duration="{enter:1, leave:1}">
+                            <span :key="Temp.vsliderkey" style="display:inline-block; z-index:-1; transform-origin:left center; position:absolute; left:-1px; bottom:0px; width:100%; height:30%; opacity:0.5; " :style="{transition:'all '+currentPlayingVoiceDuration+'s linear', background:ChrColors[Temp.speaker], boxShadow: '0px 0px 2px 2px '+ChrColors[Temp.speaker]}"></span>
+                        </transition>
+                    </span>
+                </div>
+            </div>
+            </transition>
+
+            <div :class="{speaker: vibrating && SPR.SDS}" style="font:16px impact;" :style="vibrating && SPR.SDS?{fontSize:'18px', color:ChrColors[Temp.speaker], transition:'all 0.3s', filter:'drop-shadow(0px 0px 1px '+ChrColors[Temp.speaker]+')'}:{transition:'all 0.4s',fontSize:'16px'}">Voice Player</div>
+
+            <sound-player :class="{speaker:vibrating && SPR.SDS}" ref="soundplayer" :sounds="soundMap" @play="onPlay" @stop="onStop" @vibrate="listenVibration" @change="val => {currentSelectedSound = val;Temp.speaker = getSpeaker()}" volume="0.1">Load ADP files</sound-player>
+        </div>
+
+
+
+        <div ref="endcontainer" @mouseenter="Temp.expPoped = SPR.SDN ? 1 : 0" @mouseleave="Temp.expPoped = 0" style="position:relative;  padding-top:8px;" :title="SPR.SDN? '' : 'load SDN.P'">
+            <transition name="balloon">
+                <div key="balloon" ref="balloon" v-if="Temp.expPoped || Temp.endmsgflag && SPR.SDN" class="balloonbase" style="position:absolute; left:-50px; top:-140px; width:270px; height:140px; background-color:field;">
+                    <div style="position:absolute; font:12px impact; width:100%; left:40px; top:40px; ">
+                        {{(Temp.endpopimg=this.currentEndMessage ? this.getEndingSDNSprite() : Temp.endpopimg || SPR.SDN[[1, 5, 8, 10][Math.random()*4|0]+(Math.random()*5|0)*11], '')}}
+                        <transition>
+                            <img :key="Temp.endpopimg" :src="Temp.endpopimg" style="position:absolute; top: 0px; right: 60px;">
+                        </transition>
+                        <p style="width:160px;">the three types of numbers mean each pupil's favor that a player earned</p>
+                        <ul style="list-style-type: none; padding-left:3em;">
+                            <li>0: Best
+                            <li>1: Good
+                            <li>2: Worst
+                        </ul>
+                    </div>
+                </div>
+                <template v-else>
+                    {{ Temp.endpopimg='' }}
+                </template>
+            </transition>
+            <div style="font:16px impact;" :style="(Temp.expPoped||Temp.endmsgflag) ? {fontSize:'16px', color:'red', transition:'all 0.2s', filter:'drop-shadow(0px 0px 1px red)'}:{transition:'all 2s', fontSize:'16px'}">Ending Explorer</div>
+
+            <select ref="edmsg" v-model="currentSelectedEndMsg">
+                <option v-if="!sortedEndMessages.size" key="disabled" value="" disabled>Load ENDING.DAT</option>
+                <option v-else value="" key="choose" disabled>Choose an Ending</option>
+                <option v-for="[key, val] of sortedEndMessages" :value="val" :key="key">{{key}}</option>
+            </select>
+
+            <select ref="edsort" :disabled="!endMessages" v-model="currentSelectedSortMethod">
+                <option v-for="(val, key) in endMsgSortMethods" :value="key" :key="key">{{val}}</option>
+            </select>&nbsp;
+            <button style="font:x-small impact;" :style="currentSelectedEndMsg? {color:'red'}:{}" :disabled="!currentSelectedEndMsg" @click="currentSelectedEndMsg=''">
+                CLOSE
+            </button>
+        </div>
+
+    </div>
+
+    <hr>
+
+    <div ref="status" style="font:13px impact; padding-bottom:4px;">
+        <div style="display:flex; justify-content: space-between;">
+            <div style="flex-grow:2; display:flex; justify-content:space-around; ">
+                <span>
+                    <span title="TOTAL INDEX" style="position:relative; display:inline-block;">
+                        <span style="font-size:14px;">TOTAL: </span>
+                        <span v-if="currentImage">
+                            {{ String(entireImageIndex+1).padStart(3, '0') }}/{{ String(entireImageList.length).padStart(3, '0') }}
+                            <progress style="opacity:0.7; position:absolute;width:100%; bottom:0px; left:0px; z-index:-1;" :max="1" :value="(entireImageIndex+1)/entireImageList.length"></progress>
+                        </span>
+                        <span v-else> 000/{{ String(entireImageList.length).padStart(3, '0') }}</span>
+                    </span>
+                    <span title="FILE INDEX" style="position:relative; display:inline-block; margin-left:10px;">
+                        <span style="font-size:14px;">FILE: </span>
+                        <span v-if="currentImage">
+                            <span style="position:relative">
+                                {{ String(fileIndex+1).padStart(3, '0') }}/{{ String(imageMap.size).padStart(3, '0') }}
+                            </span>
+                            <span title="SUBLIST INDEX" :style="currentFile.length > 1 ? {color:'red'} : {}"> ({{String(sublistIndex+1).padStart(3, '0')}}/{{String(currentFile.length).padStart(3, '0')}})</span>
+                        </span>
+                        <span v-else> 000/000 (000/000)</span>
+                    </span>
+                </span>
+                <span title="AUDIO">
+                    <span style="font-size:14px;">Sounds: </span>
+                    <span> {{String(soundMap.size).padStart(3, '0')}}</span>
+                </span>
+                <span title="ENDING.DAT">
+                    <span style="font-size:14px;">Ending: </span>
+                    <span> {{endMessages ? 'loaded' : 'none'}}</span>
+                </span>
+            </div>
+            <div style="flex-grow:1"></div>
+        </div>
+        <div style="display:flex; justify-content: space-between;">
+            <div style="flex-grow:0.2;"></div>
+            <div style="flex-grow:1; display:flex;">
+                <span v-if="currentImage" style="flex-grow:1; display:flex; justify-content:space-between;">
+                    <span>Width: {{Info.width}}</span>
+                    <span>Height: {{Info.height}}</span>
+                    <span>OffsetX: {{Info.offsetX}}</span>
+                    <span>OffsetY: {{Info.offsetY}}</span>
+                    <span>Type: {{Info.type}}</span>
+                    <span>Pal: {{Info.pal}}</span>
+                    <span>Transp: {{Info.transp}}</span>
+                </span>
+                <span v-else style="flex-grow:1; display:flex; justify-content:space-between;">
+                    <span>Width: xxxx </span>
+                    <span>Height: xxx </span>
+                    <span>OffsetX: xxxx </span>
+                    <span>OffsetY: xxx </span>
+                    <span>Type: x </span>
+                    <span>Pal: xxxx </span>
+                    <span>Transp: xx </span>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div ref="viewpanel" style="position:relative; height: 400px; margin-top:0px; border:2px solid field; padding:-4px;">
+    <transition name="img" :css="!disableIMGTransition">
+        <a v-if="currentImageSrc" :key="currentImageSrc" :href="currentImageSrc" :download="Info.name+'.png'" style="position:absolute; display:inline-block; left:-2px; top:-2px;" :style="getImgPosition(-2)">
+            <img :src="currentImageSrc" ref="convertedimg" style="position:relative; z-index:1; filter:drop-shadow(2px 2px 0px #808080);" title="click to download">
+        </a>
+        <div v-else style="text-align:center; color:white; position:absolute; width:200px; height:120px; left:0px; top:0px; bottom:0px; right:0px; margin:auto; font: italic 40px impact; filter:drop-shadow(2px 2px 2px gray);">
+            LOAD GNA FILES
+        </div>
+    </transition>
+    <transition-group>
+        <div :key="currentSelectedEndMsg" ref="edmsgbox" id="edmsgbox" v-if="!!currentEndMessage" :style="{top:'-2px', left: (-2 + endMsgLeftPosition*336)+'px'}" @mouseover="closeButtonVis=1" @mouseleave="closeButtonVis=0">
+            {{currentEndMessage}}
+            {{(Temp.endmsgflag=1, '')}}
+            <div ref="close" v-show="closeButtonVis" style="position:absolute; right:8px; top:8px; width:80px; height:30px; display:flex; justify-content:flex-end; user-select: none;"><span style="cursor:grab;" @click="endMsgLeftPosition=endMsgLeftPosition?0:1">⬌</span>&nbsp;<span style="cursor:pointer;" @click="currentSelectedEndMsg='';">❌</span></div>
+        </div>
+        <div v-else key="hoge">
+            {{(Temp.endmsgflag=0, '')}}
+        </div>
+    </transition-group>
+</div>
+
+<div title="PALETTE" ref="palette" style="font:xx-small impact; position:relative; z-index:2; margin-top:0px; text-align:right; background-color: field; border:1px solid field; padding-right:18px;">
+    Palette
+    <canvas ref="palcanvas" id="palcanvas2" style="border: 1px solid black;"></canvas>
+    <select style="height:18px; font-size:12px;" ref="palettes" v-model="currentSelectedPal" :disabled="paletteLocked" @change="onChangePalette">
+        <option value="">default</option>
+        <option v-for="(val, key) in PalKeys" :value="val">{{key}}</option>
+    </select>
+    <button :disabled="currentSelectedPal === ''" style="cursor:pointer; user-select: none; border:0px; line-height:18px; height:18px; font-size:16px;" style="cursor:pointer; user-select: none;" @click="paletteLocked = !paletteLocked" :title="paletteLocked? 'palette locked' : ''">
+        {{paletteLocked ? '🔐' : '🔑'}}
+    </button>
+</div>
+
+
+
+
+
+<div style="position:fixed; width:640px; height:0px; left:0px; right:0px; top:0px; margin:0px auto; z-index:11;">
+    <div style="position: absolute; width:1px; height:100vh; right:-20px;top:0px;">
+        <transition>
+        <div ref="bunny" v-if="SPR.OBAKE3" style="user-select: none;cursor:grab; z-index:12; position:absolute; right:-52px; bottom:5px; width:100px; height:100px;">
+            {{ (Temp.bunny=Temp.bunny || SPR.OBAKE3[Math.random()*8|0], '')}}
+            <transition name="bunny" appear mode="out-in" appear>
+                <img :src="Temp.bunny" :key="Temp.bunny" style="position:absolute; bottom:0px;" @click="(function a(tmp){tmp=SPR.OBAKE3[Math.random()*8|0];Temp.bunny===tmp? a():(Temp.bunny=tmp)})()">
+            </transition>
+        </div>
+        </transition>
+    </div>
+</div>
+
+<div ref="alice-intersect" @intersect="Tmpr.aliceshow=1;" @unintersect="Tmpr.aliceshow=0" style="width:640px; height:60px; position:relative; z-index:22;">
+    <transition>
+    <div v-if="SPR.ALICE" style="user-select: none;z-index:10;position:relative; top:-58px; left:-45px; cursor:grab;" @click="Temp.aliceorder = updateAliceOrder()">
+        {{ (Temp.aliceorder = Temp.aliceorder || updateAliceOrder(), '') }}
+        {{ (Temp.aliceclass='alice-slide', '')}}
+        <transition-group name="alice" appear>
+        <span v-if="Tmpr.aliceshow" v-for="(dat, i) in Temp.aliceorder" :key="i" style="text-align:c
+        ; position:absolute; width:96px; height:112px;" :style="{left:dat.left+'px', top:dat.top+'px', zIndex:dat.zIndex}">
+            <transition>
+            <img :src="dat.src" :key="dat.src" style="position:absolute; bottom:0px; left:0px; right:0px; margin-left:auto; margin-right:auto;">
+            </transition>
+        </span>
+        </transition>
+    </div>
+    </transition>
+</div>
+
+
+
+<transition>
+<div v-show="disabled" style="position:fixed; width:100%; height:100%; left:0px; top:0px; background-color:rgba(0, 0, 0, 0.5); z-index:999; display:flex; align-items:center; justify-content: center;">
+    <button @click="disabled=false" style="width:10em; height:7em;">
+        <span style="font:bolder xx-large impact;">STOP</span><br>
+        <span>({{this.progressCurrent}} / {{this.progressTotal}})</span><br>
+        <progress style="width:9em;" :max="this.progressTotal" :value="this.progressCurrent">{{this.progressCurrent/this.progressTotal*100|0}}</progress>
+    </button>
+</div>
+</transition>
+
+</body>
+</html>
