@@ -641,4 +641,3 @@ export function convertADPtoWAVE(buff) {
     }
     return outbuff.buffer;
 }
-//# sourceMappingURL=gna.js.map

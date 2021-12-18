@@ -1177,4 +1177,3 @@ const VueApp = {
 const app = Vue.createApp(VueApp).mount(document.body);
 // @ts-ignore
 //window.app = app;
-//# sourceMappingURL=app.js.map

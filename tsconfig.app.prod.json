@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "ES2015", /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
+    "target": "ES2015",
+
+    "sourceMap": false,
+    "strict": true, /* Enable all strict type-checking options. */
+    "noImplicitAny": false, /* Enable error reporting for expressions and declarations with an implied `any` type.. */
+    "skipLibCheck": true, /* Skip type checking all .d.ts files. */
+
+    "rootDir": "./"
+  },
+  "files": [
+    "./browser/app.ts",
+  ]
+}

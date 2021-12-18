@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "commonjs", /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
+    "outDir": "./cjs",
+    "declaration": true,
+    "sourceMap": false, /* Create source map files for emitted JavaScript files. */
+    "strict": true, /* Enable all strict type-checking options. */
+    "noImplicitAny": false, /* Enable error reporting for expressions and declarations with an implied `any` type.. */
+    "skipLibCheck": true, /* Skip type checking all .d.ts files. */
+  },
+  "files": [
+    "gna.ts",
+  ],
+}

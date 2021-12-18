@@ -42,4 +42,3 @@ function showUsage() {
     console.log('Convert GNA to PNG');
     console.log('USAGE: gnaparser <FileName>');
 }
-//# sourceMappingURL=index.js.map
