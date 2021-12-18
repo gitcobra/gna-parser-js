@@ -474,7 +474,7 @@ UPNG.encode._main = function(nimg, w, h, dels, tabs) {
 	leng += 12;
 
 	// for comment
-	leng += 4 + 14;
+	leng += 7 + 12;
 
 	var data = new Uint8Array(leng);
 	var wr=[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
@@ -565,10 +565,10 @@ UPNG.encode._main = function(nimg, w, h, dels, tabs) {
 	}
 
 	{// add comment
-		wUi(data,offset, 6);      offset+=4;
+		wUi(data,offset, 7);      offset+=4;
 		wAs(data,offset,"tEXt");  offset+=4;
-		wAs(data,offset, '_GNAP\0_');     offset+=6;
-		wUi(data,offset,crc(data,offset-8,8));  offset+=4; // crc
+		wAs(data,offset, '_GNAP\0_');     offset+=7;
+		wUi(data,offset,crc(data,offset-11,11));  offset+=4; // crc
 	}
 
 	wUi(data,offset, 0);     offset+=4;
